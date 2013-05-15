@@ -229,13 +229,11 @@ CreateGrab(int client, DeviceIntPtr device, DeviceIntPtr modDevice, WindowPtr wi
     grab->detail.exact = keybut;
     grab->detail.pMask = NULL;
     grab->confineTo = confineTo;
-    grab->cursor = cursor;
+    grab->cursor = RefCursor(cursor);
     grab->next = NULL;
 
     if (grabtype == XI2)
         xi2mask_merge(grab->xi2mask, mask->xi2mask);
-    if (cursor)
-        cursor->refcnt++;
     return grab;
 
 }
@@ -262,9 +260,6 @@ CopyGrab(GrabPtr dst, const GrabPtr src)
     Mask *mdetails_mask = NULL;
     Mask *details_mask = NULL;
     XI2Mask *xi2mask;
-
-    if (src->cursor)
-        src->cursor->refcnt++;
 
     if (src->modifiersDetail.pMask) {
         int len = MasksPerDetailMask * sizeof(Mask);
@@ -303,6 +298,7 @@ CopyGrab(GrabPtr dst, const GrabPtr src)
     dst->modifiersDetail.pMask = mdetails_mask;
     dst->detail.pMask = details_mask;
     dst->xi2mask = xi2mask;
+    dst->cursor = RefCursor(src->cursor);
 
     xi2mask_merge(dst->xi2mask, src->xi2mask);
 

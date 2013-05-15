@@ -929,8 +929,7 @@ ChangeToCursor(DeviceIntPtr pDev, CursorPtr cursor)
 
         (*pScreen->DisplayCursor) (pDev, pScreen, cursor);
         FreeCursor(pSprite->current, (Cursor) 0);
-        pSprite->current = cursor;
-        pSprite->current->refcnt++;
+        pSprite->current = RefCursor(cursor);
     }
 }
 
@@ -3159,11 +3158,10 @@ InitializeSprite(DeviceIntPtr pDev, WindowPtr pWin)
         pSprite->pEnqueueScreen = screenInfo.screens[0];
         pSprite->pDequeueScreen = pSprite->pEnqueueScreen;
     }
-    if (pCursor)
-        pCursor->refcnt++;
+    pCursor = RefCursor(pCursor);
     if (pSprite->current)
         FreeCursor(pSprite->current, None);
-    pSprite->current = pCursor;
+    pSprite->current = RefCursor(pCursor);
 
     if (pScreen) {
         (*pScreen->RealizeCursor) (pDev, pScreen, pSprite->current);
@@ -3230,9 +3228,7 @@ UpdateSpriteForScreen(DeviceIntPtr pDev, ScreenPtr pScreen)
     pSprite->hotLimits.x2 = pScreen->width;
     pSprite->hotLimits.y2 = pScreen->height;
     pSprite->win = win;
-    pCursor = wCursor(win);
-    if (pCursor)
-        pCursor->refcnt++;
+    pCursor = RefCursor(wCursor(win));
     if (pSprite->current)
         FreeCursor(pSprite->current, 0);
     pSprite->current = pCursor;
@@ -4878,9 +4874,7 @@ ProcChangeActivePointerGrab(ClientPtr client)
         (CompareTimeStamps(time, device->deviceGrab.grabTime) == EARLIER))
         return Success;
     oldCursor = grab->cursor;
-    grab->cursor = newCursor;
-    if (newCursor)
-        newCursor->refcnt++;
+    grab->cursor = RefCursor(newCursor);
     PostNewCursor(device);
     if (oldCursor)
         FreeCursor(oldCursor, (Cursor) 0);
@@ -5025,7 +5019,7 @@ GrabDevice(ClientPtr client, DeviceIntPtr dev,
         else
             xi2mask_merge(tempGrab->xi2mask, mask->xi2mask);
         tempGrab->device = dev;
-        tempGrab->cursor = cursor;
+        tempGrab->cursor = RefCursor(cursor);
         tempGrab->confineTo = confineTo;
         tempGrab->grabtype = grabtype;
         (*grabInfo->ActivateGrab) (dev, tempGrab, time, FALSE);
