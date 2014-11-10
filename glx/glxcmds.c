@@ -1999,7 +1999,8 @@ __glXDisp_Render(__GLXclientState * cl, GLbyte * pc)
         if (entry.varsize) {
             /* variable size command */
             extra = (*entry.varsize) (pc + __GLX_RENDER_HDR_SIZE,
-                                      client->swapped);
+                                      client->swapped,
+                                      left - __GLX_RENDER_HDR_SIZE);
             if (extra < 0) {
                 return BadLength;
             }
@@ -2076,6 +2077,7 @@ __glXDisp_RenderLarge(__GLXclientState * cl, GLbyte * pc)
     if (cl->largeCmdRequestsSoFar == 0) {
         __GLXrenderSizeData entry;
         int extra = 0;
+        int left = (req->length << 2) - sz_xGLXRenderLargeReq;
         size_t cmdlen;
         int err;
 
@@ -2116,7 +2118,8 @@ __glXDisp_RenderLarge(__GLXclientState * cl, GLbyte * pc)
              ** will be in the 1st request, so it's okay to do this.
              */
             extra = (*entry.varsize) (pc + __GLX_RENDER_LARGE_HDR_SIZE,
-                                      client->swapped);
+                                      client->swapped,
+                                      left - __GLX_RENDER_LARGE_HDR_SIZE);
             if (extra < 0) {
                 return BadLength;
             }
