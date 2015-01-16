@@ -5086,26 +5086,29 @@ ProcXkbGetGeometry(ClientPtr client)
 
 /***====================================================================***/
 
-static char *
-_GetCountedString(char **wire_inout, Bool swap)
+static Status
+_GetCountedString(char **wire_inout, ClientPtr client, char **str)
 {
-    char *wire, *str;
-    CARD16 len, *plen;
+    char *wire, *next;
+    CARD16 len;
 
     wire = *wire_inout;
-    plen = (CARD16 *) wire;
-    if (swap) {
-        swaps(plen);
+    len = *(CARD16 *) wire;
+    if (client->swapped) {
+        swaps(&len);
     }
-    len = *plen;
-    str = malloc(len + 1);
-    if (str) {
-        memcpy(str, &wire[2], len);
-        str[len] = '\0';
-    }
-    wire += XkbPaddedSize(len + 2);
-    *wire_inout = wire;
-    return str;
+    next = wire + XkbPaddedSize(len + 2);
+    /* Check we're still within the size of the request */
+    if (client->req_len <
+        bytes_to_int32(next - (char *) client->requestBuffer))
+        return BadValue;
+    *str = malloc(len + 1);
+    if (!*str)
+        return BadAlloc;
+    memcpy(*str, &wire[2], len);
+    *(*str + len) = '\0';
+    *wire_inout = next;
+    return Success;
 }
 
 static Status
@@ -5115,6 +5118,7 @@ _CheckSetDoodad(char **wire_inout, xkbSetGeometryReq *req,
     char *wire;
     xkbDoodadWireDesc *dWire;
     XkbDoodadPtr doodad;
+    Status status;
 
     dWire = (xkbDoodadWireDesc *) (*wire_inout);
     if (!_XkbCheckRequestBounds(client, req, dWire, dWire + 1))
@@ -5165,8 +5169,14 @@ _CheckSetDoodad(char **wire_inout, xkbSetGeometryReq *req,
         doodad->text.width = dWire->text.width;
         doodad->text.height = dWire->text.height;
         doodad->text.color_ndx = dWire->text.colorNdx;
-        doodad->text.text = _GetCountedString(&wire, client->swapped);
-        doodad->text.font = _GetCountedString(&wire, client->swapped);
+        status = _GetCountedString(&wire, client, &doodad->text.text);
+        if (status != Success)
+            return status;
+        status = _GetCountedString(&wire, client, &doodad->text.font);
+        if (status != Success) {
+            free (doodad->text.text);
+            return status;
+        }
         break;
     case XkbIndicatorDoodad:
         if (dWire->indicator.onColorNdx >= geom->num_colors) {
@@ -5201,7 +5211,9 @@ _CheckSetDoodad(char **wire_inout, xkbSetGeometryReq *req,
         }
         doodad->logo.color_ndx = dWire->logo.colorNdx;
         doodad->logo.shape_ndx = dWire->logo.shapeNdx;
-        doodad->logo.logo_name = _GetCountedString(&wire, client->swapped);
+        status = _GetCountedString(&wire, client, &doodad->logo.logo_name);
+        if (status != Success)
+            return status;
         break;
     default:
         client->errorValue = _XkbErrCode2(0x4F, dWire->any.type);
@@ -5460,18 +5472,20 @@ _CheckSetGeom(XkbGeometryPtr geom, xkbSetGeometryReq * req, ClientPtr client)
     char *wire;
 
     wire = (char *) &req[1];
-    geom->label_font = _GetCountedString(&wire, client->swapped);
+    status = _GetCountedString(&wire, client, &geom->label_font);
+    if (status != Success)
+        return status;
 
     for (i = 0; i < req->nProperties; i++) {
         char *name, *val;
 
-        name = _GetCountedString(&wire, client->swapped);
-        if (!name)
-            return BadAlloc;
-        val = _GetCountedString(&wire, client->swapped);
-        if (!val) {
+        status = _GetCountedString(&wire, client, &name);
+        if (status != Success)
+            return status;
+        status = _GetCountedString(&wire, client, &val);
+        if (status != Success) {
             free(name);
-            return BadAlloc;
+            return status;
         }
         if (XkbAddGeomProperty(geom, name, val) == NULL) {
             free(name);
@@ -5505,9 +5519,9 @@ _CheckSetGeom(XkbGeometryPtr geom, xkbSetGeometryReq * req, ClientPtr client)
     for (i = 0; i < req->nColors; i++) {
         char *name;
 
-        name = _GetCountedString(&wire, client->swapped);
-        if (!name)
-            return BadAlloc;
+        status = _GetCountedString(&wire, client, &name);
+        if (status != Success)
+            return status;
         if (!XkbAddGeomColor(geom, name, geom->num_colors)) {
             free(name);
             return BadAlloc;
