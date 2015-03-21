@@ -74,6 +74,10 @@ typedef struct _NewClientRec *NewClientPtr;
 
 #define xstrdup(s) Xstrdup(s)
 #define xnfstrdup(s) XNFstrdup(s)
+
+#define xallocarray(num, size) reallocarray(NULL, (num), (size))
+#define xnfallocarray(num, size) XNFreallocarray(NULL, (num), (size))
+#define xnfreallocarray(ptr, num, size) XNFreallocarray((ptr), (num), (size))
 #endif
 
 #include <stdio.h>
@@ -230,6 +234,13 @@ XNFcalloc(unsigned long /*amount */ );
  */
 extern _X_EXPORT void *
 XNFrealloc(void * /*ptr */ , unsigned long /*amount */ );
+
+/*
+ * This function reallocarray(3)s passed buffer, terminating the server if
+ * there is not enough memory or the arguments overflow when multiplied.
+ */
+extern _X_EXPORT void *
+XNFreallocarray(void *ptr, size_t nmemb, size_t size);
 
 /*
  * This function strdup(3)s passed string. The only difference from the library
