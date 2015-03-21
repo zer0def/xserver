@@ -1062,6 +1062,16 @@ XNFrealloc(void *ptr, unsigned long amount)
     return ret;
 }
 
+void *
+XNFreallocarray(void *ptr, size_t nmemb, size_t size)
+{
+    void *ret = reallocarray(ptr, nmemb, size);
+
+    if (!ret)
+        FatalError("XNFreallocarray: Out of memory");
+    return ret;
+}
+
 void
 Xfree(void *ptr)
 {
