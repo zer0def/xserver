@@ -1256,7 +1256,6 @@ GetLocalClientCreds(ClientPtr client, LocalClientCredRec ** lccp)
 #endif
 #else
     /* No system call available to get the credentials of the peer */
-#define NO_LOCAL_CLIENT_CRED
     return -1;
 #endif
 }
