@@ -178,11 +178,7 @@
 #include <sys/types.h>
 #include <assert.h>
 
-#ifdef __linux__
-#include <termio.h>
-#else                           /* __GLIBC__ */
 #include <termios.h>
-#endif
 #ifdef __sparc__
 #include <sys/param.h>
 #endif
