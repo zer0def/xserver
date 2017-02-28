@@ -219,7 +219,8 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS([backtrace ffs geteuid getuid issetugid getresuid \
 	getdtablesize getifaddrs getpeereid getpeerucred getprogname getzoneid \
 	mmap seteuid shmctl64 strncasecmp vasprintf vsnprintf walkcontext])
-AC_REPLACE_FUNCS([strcasecmp strcasestr strlcat strlcpy strndup])
+AC_REPLACE_FUNCS([strcasecmp strcasestr strlcat strlcpy strndup\
+	timingsafe_memcmp])
 
 AC_CHECK_DECLS([program_invocation_short_name], [], [], [[#include <errno.h>]])
 
