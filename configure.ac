@@ -216,7 +216,8 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS([backtrace ffs geteuid getuid issetugid getresuid \
 	getdtablesize getifaddrs getpeereid getpeerucred getzoneid \
 	mmap shmctl64 strncasecmp vasprintf vsnprintf walkcontext])
-AC_REPLACE_FUNCS([strcasecmp strcasestr strlcat strlcpy strndup])
+AC_REPLACE_FUNCS([strcasecmp strcasestr strlcat strlcpy strndup\
+	timingsafe_memcmp])
 
 dnl Check for SO_PEERCRED #define
 AC_CACHE_CHECK([for SO_PEERCRED in sys/socket.h],
