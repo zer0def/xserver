@@ -1278,7 +1278,8 @@ ProcXFixesCreatePointerBarrier(ClientPtr client)
 
     REQUEST(xXFixesCreatePointerBarrierReq);
 
-    REQUEST_SIZE_MATCH(xXFixesCreatePointerBarrierReq);
+    REQUEST_FIXED_SIZE(xXFixesCreatePointerBarrierReq,
+                       pad_to_int32(stuff->num_devices * sizeof(CARD16)));
     LEGAL_NEW_RESOURCE(stuff->barrier, client);
 
     err = dixLookupWindow(&pWin, stuff->window, client, DixReadAccess);
@@ -1321,7 +1322,10 @@ SProcXFixesCreatePointerBarrier(ClientPtr client)
     REQUEST_AT_LEAST_SIZE(xXFixesCreatePointerBarrierReq);
 
     swaps(&stuff->length);
-    REQUEST_SIZE_MATCH(xXFixesCreatePointerBarrierReq);
+    //swaps(&stuff->num_devices);
+    REQUEST_FIXED_SIZE(xXFixesCreatePointerBarrierReq,
+                       pad_to_int32(stuff->num_devices * sizeof(CARD16)));
+
     swapl(&stuff->barrier);
     swapl(&stuff->window);
     swaps(&stuff->x1);
