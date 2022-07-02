@@ -415,9 +415,13 @@
     if (table_apps != nil)
         oldapps = table_apps;
 
-    table_apps = [[NSMutableArray alloc] initWithCapacity:1];
-    if (apps != nil)
-        [table_apps addObjectsFromArray:apps];
+    //table_apps = [[NSMutableArray alloc] initWithCapacity:1];  // ?
+    NSArray * const apps = self.apps;
+    if (apps != nil) {
+        for (NSArray <NSString *> * row in apps) {
+            [table_apps addObject:row.mutableCopy];
+        }
+    }
 
     columns = [apps_table tableColumns];
     [[columns objectAtIndex:0] setIdentifier:@"0"];
