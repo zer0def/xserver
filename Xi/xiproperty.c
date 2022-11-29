@@ -888,7 +888,7 @@ ProcXChangeDeviceProperty(ClientPtr client)
     REQUEST(xChangeDevicePropertyReq);
     DeviceIntPtr dev;
     unsigned long len;
-    int totalSize;
+    uint64_t totalSize;
     int rc;
 
     REQUEST_AT_LEAST_SIZE(xChangeDevicePropertyReq);
@@ -1126,7 +1126,7 @@ ProcXIChangeProperty(ClientPtr client)
 {
     int rc;
     DeviceIntPtr dev;
-    int totalSize;
+    uint64_t totalSize;
     unsigned long len;
 
     REQUEST(xXIChangePropertyReq);
