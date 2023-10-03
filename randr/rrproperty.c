@@ -188,7 +188,7 @@ RRChangeOutputProperty(RROutputPtr output, Atom property, Atom type,
                 RRDestroyOutputProperty(prop);
             return BadAlloc;
         }
-        new_value.size = len;
+        new_value.size = total_len;
         new_value.type = type;
         new_value.format = format;
 
@@ -204,8 +204,8 @@ RRChangeOutputProperty(RROutputPtr output, Atom property, Atom type,
             break;
         case PropModePrepend:
             new_data = new_value.data;
-            old_data = (pointer) (((char *) new_value.data) +
-                                  (prop_value->size * size_in_bytes));
+            old_data = (void *) (((char *) new_value.data) +
+                                  (len * size_in_bytes));
             break;
         }
         if (new_data)
