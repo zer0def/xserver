@@ -56,8 +56,6 @@ extern void DeviceEnterLeaveEvent(DeviceIntPtr mouse,
 
 extern void EnterWindow(DeviceIntPtr dev, WindowPtr win, int mode);
 
-extern void LeaveWindow(DeviceIntPtr dev);
-
 extern void CoreFocusEvent(DeviceIntPtr kbd,
                            int type, int mode, int detail, WindowPtr pWin);
 
