@@ -2406,11 +2406,20 @@ RecalculateMasterButtons(DeviceIntPtr slave)
 
     if (master->button && master->button->numButtons != maxbuttons) {
         int i;
+        int last_num_buttons = master->button->numButtons;
         DeviceChangedEvent event;
 
         memset(&event, 0, sizeof(event));
 
         master->button->numButtons = maxbuttons;
+        if (last_num_buttons < maxbuttons) {
+            master->button->xkb_acts = xnfreallocarray(master->button->xkb_acts,
+                                                       maxbuttons,
+                                                       sizeof(XkbAction));
+            memset(&master->button->xkb_acts[last_num_buttons],
+                   0,
+                   (maxbuttons - last_num_buttons) * sizeof(XkbAction));
+        }
 
         event.header = ET_Internal;
         event.type = ET_DeviceChanged;
