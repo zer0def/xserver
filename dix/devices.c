@@ -425,11 +425,17 @@ DisableDevice(DeviceIntPtr dev, BOOL sendevent)
 {
     DeviceIntPtr *prev, other;
     BOOL enabled;
+    BOOL dev_in_devices_list = FALSE;
     int flags[MAXDEVICES] = { 0 };
 
-    for (prev = &inputInfo.devices;
-         *prev && (*prev != dev); prev = &(*prev)->next);
-    if (*prev != dev)
+    for (other = inputInfo.devices; other; other = other->next) {
+        if (other == dev) {
+            dev_in_devices_list = TRUE;
+            break;
+        }
+    }
+
+    if (!dev_in_devices_list)
         return FALSE;
 
     /* float attached devices */
@@ -472,6 +478,9 @@ DisableDevice(DeviceIntPtr dev, BOOL sendevent)
 
     LeaveWindow(dev);
     SetFocusOut(dev);
+
+    for (prev = &inputInfo.devices;
+         *prev && (*prev != dev); prev = &(*prev)->next);
 
     *prev = dev->next;
     dev->next = inputInfo.off_devices;
