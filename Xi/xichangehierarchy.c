@@ -410,6 +410,11 @@ ProcXIChangeHierarchy(ClientPtr client)
     size_t len;			/* length of data remaining in request */
     int rc = Success;
     int flags[MAXDEVICES] = { 0 };
+    enum {
+        NO_CHANGE,
+        FLUSH,
+        CHANGED,
+    } changes = NO_CHANGE;
 
     REQUEST(xXIChangeHierarchyReq);
     REQUEST_AT_LEAST_SIZE(xXIChangeHierarchyReq);
@@ -459,8 +464,9 @@ ProcXIChangeHierarchy(ClientPtr client)
             rc = add_master(client, c, flags);
             if (rc != Success)
                 goto unwind;
-        }
+            changes = FLUSH;
             break;
+        }
         case XIRemoveMaster:
         {
             xXIRemoveMasterInfo *r = (xXIRemoveMasterInfo *) any;
@@ -469,8 +475,9 @@ ProcXIChangeHierarchy(ClientPtr client)
             rc = remove_master(client, r, flags);
             if (rc != Success)
                 goto unwind;
-        }
+            changes = FLUSH;
             break;
+        }
         case XIDetachSlave:
         {
             xXIDetachSlaveInfo *c = (xXIDetachSlaveInfo *) any;
@@ -479,8 +486,9 @@ ProcXIChangeHierarchy(ClientPtr client)
             rc = detach_slave(client, c, flags);
             if (rc != Success)
                 goto unwind;
-        }
+            changes = CHANGED;
             break;
+        }
         case XIAttachSlave:
         {
             xXIAttachSlaveInfo *c = (xXIAttachSlaveInfo *) any;
@@ -489,8 +497,17 @@ ProcXIChangeHierarchy(ClientPtr client)
             rc = attach_slave(client, c, flags);
             if (rc != Success)
                 goto unwind;
-        }
+            changes = CHANGED;
             break;
+        }
+        default:
+            break;
+        }
+
+        if (changes == FLUSH) {
+            XISendDeviceHierarchyEvent(flags);
+            memset(flags, 0, sizeof(flags));
+            changes = NO_CHANGE;
         }
 
         len -= any->length * 4;
@@ -498,7 +515,7 @@ ProcXIChangeHierarchy(ClientPtr client)
     }
 
  unwind:
-
-    XISendDeviceHierarchyEvent(flags);
+    if (changes != NO_CHANGE)
+        XISendDeviceHierarchyEvent(flags);
     return rc;
 }
