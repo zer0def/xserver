@@ -2951,12 +2951,12 @@ _XkbSetCompatMap(ClientPtr client, DeviceIntPtr dev,
         unsigned int skipped = 0;
 
         if ((unsigned) (req->firstSI + req->nSI) > compat->num_si) {
-            compat->num_si = req->firstSI + req->nSI;
-            compat->sym_interpret = realloc(compat->sym_interpret,
-                                            compat->num_si *
+            compat->num_si = compat->size_si = req->firstSI + req->nSI;
+            compat->sym_interpret = realloc(compat->sym_interpret,  // reallocarray( ?
+                                            compat->size_si *
                                             sizeof(XkbSymInterpretRec));
             if (!compat->sym_interpret) {
-                compat->num_si = 0;
+                compat->num_si = compat->size_si = 0;
                 return BadAlloc;
             }
         }
