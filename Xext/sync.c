@@ -344,6 +344,24 @@ SyncInitTrigger(ClientPtr client, SyncTrigger * pTrigger, XID syncObject,
         }
     }
 
+    if (changes & (XSyncCAValueType | XSyncCAValue)) {
+        if (pTrigger->value_type == XSyncAbsolute)
+            pTrigger->test_value = pTrigger->wait_value;
+        else {                  /* relative */
+            Bool overflow;
+
+            if (pCounter == NULL)
+                return BadMatch;
+
+            overflow = checked_int64_add(&pTrigger->test_value,
+                                         pCounter->value, pTrigger->wait_value);
+            if (overflow) {
+                client->errorValue = pTrigger->wait_value >> 32;
+                return BadValue;
+            }
+        }
+    }
+
     if (changes & XSyncCATestType) {
 
         if (pSync && SYNC_FENCE == pSync->type) {
@@ -367,25 +385,6 @@ SyncInitTrigger(ClientPtr client, SyncTrigger * pTrigger, XID syncObject,
                 break;
             default:
                 client->errorValue = pTrigger->test_type;
-                return BadValue;
-            }
-        }
-    }
-
-    if (changes & (XSyncCAValueType | XSyncCAValue)) {
-        if (pTrigger->value_type == XSyncAbsolute)
-            pTrigger->test_value = pTrigger->wait_value;
-        else {                  /* relative */
-
-            Bool overflow;
-
-            if (pCounter == NULL)
-                return BadMatch;
-
-            XSyncValueAdd(&pTrigger->test_value, pCounter->value,
-                          pTrigger->wait_value, &overflow);
-            if (overflow) {
-                client->errorValue = XSyncValueHigh32(pTrigger->wait_value);
                 return BadValue;
             }
         }
