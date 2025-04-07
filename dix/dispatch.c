@@ -397,9 +397,10 @@ Dispatch(void)
                  * device grabs, are calculated correctly */
                 UpdateCurrentTimeIf();
                 result = ReadRequestFromClient(client);
-                if (result <= 0) {
-                    if (result < 0)
-                        CloseDownClient(client);
+                if (result == 0)
+                    break;
+                else if (result == -1) {
+                    CloseDownClient(client);
                     break;
                 }
 
@@ -420,7 +421,7 @@ Dispatch(void)
                                           client->index,
                                           client->requestBuffer);
 #endif
-                if (result > (maxBigRequestSize << 2))
+                if (result < 0 || result > (maxBigRequestSize << 2))
                     result = BadLength;
                 else {
                     result = XaceHookDispatch(client, client->majorOp);
