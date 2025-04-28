@@ -475,7 +475,7 @@ ReadRequestFromClient(ClientPtr client)
         }
     }
     else {
-        if (!gotnow)
+        if (!gotnow && !oci->ignoreBytes)
             AvailableInput = oc;
         if (!SmartScheduleDisable)
             FD_CLR(fd, &ClientsWithInput);
