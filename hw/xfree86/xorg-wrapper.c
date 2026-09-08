@@ -34,6 +34,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/sysmacros.h>
 #include <sys/types.h>
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
 #include <sys/consio.h>

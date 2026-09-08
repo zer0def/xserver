@@ -83,6 +83,7 @@
 #include <stdint.h>             /* for int64_t */
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/sysmacros.h>
 #include <unistd.h>
 #ifdef HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>          /* for major() & minor() on Solaris */
